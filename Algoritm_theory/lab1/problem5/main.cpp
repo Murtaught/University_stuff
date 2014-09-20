@@ -57,6 +57,14 @@ struct Automaton
     void print()
     {
         out << (states.size() - 1) << " states\n";
+
+        out << "final states: ";
+        foreach (int final_state, final_states)
+        {
+            out << final_state << " ";
+        }
+        out << "\n";
+
         for (int i = 1; i < states.size(); ++i)
             foreach (QChar c, states[i].uniqueKeys())
             {
@@ -66,7 +74,7 @@ struct Automaton
     }
 };
 
-Automaton nfa;
+Automaton nfa, dfa;
 
 void readInput()
 {
@@ -107,16 +115,16 @@ Automaton transformNFAtoDFA(const Automaton &nfa)
 
         QQueue< QSet<int> >  queue;
         {
-            // Создаем множество {1} и помещаем его в очередь
-            QSet<int> set; set << 1; // set = { 1 }
-            queue.enqueue(set);
-
-            // Создаем эквивалентное состояние в ДКА
+            // Предварительная настройка нулевого (пустого) и первого стояния ДКА
             dfa.states.resize(2);
-            // states[0] не используется,
-            // states[1] соответствует {1}
-            congruence[QSet<int>()] = 0;
-            congruence[set] = 1;
+
+            QSet<int> one_set; one_set << 1;
+            queue.enqueue(one_set);
+            congruence[one_set] = 1;
+            if ( nfa.final_states.contains(1) )
+                dfa.final_states.insert(1);
+
+            congruence[QSet<int>()] = 0; // пустое множество состояний НКА
         }
 
         while ( !queue.isEmpty() )
@@ -158,16 +166,54 @@ Automaton transformNFAtoDFA(const Automaton &nfa)
     return dfa;
 }
 
+QMap<QPair<int, int>, int> hash;
+QString current_word;
+
+int dfs(int this_state_idx, int l)
+{
+    // Это немного измененный кусок из решения задачи №4
+    // Здесь ради разнообразия я включил вывод в файл всех найденных строк
+    //if ( !hash.contains(qMakePair(this_state_idx, l)) )
+    {
+        Automaton::StateT &this_state = dfa.states[this_state_idx];
+        int answer = 0;
+
+        if (l == 0)
+        {
+             if ( dfa.final_states.contains(this_state_idx) )
+             {
+                 answer = 1;
+                   out << current_word << '\n';
+             }
+        }
+        else
+        {
+            foreach (QChar c, this_state.keys())
+            {
+                  current_word += c;
+                answer += dfs(this_state[c], l - 1);
+                answer %= MODULO;
+                  current_word.chop(1); // remove last character (it is c)
+            }
+        }
+
+        //hash[ qMakePair(this_state_idx, l) ] = answer;
+        return answer;
+    }
+    //return hash[ qMakePair(this_state_idx, l) ];
+}
 
 int main()
 {
     openFiles();
-
     readInput();
-    nfa.print(); // ok
+    dfa = transformNFAtoDFA(nfa);
 
-    Automaton dfa = transformNFAtoDFA(nfa);
-    dfa.print();
+    //nfa.print();
+    //dfa.print();
+
+    // Задача сведена к предыдущей
+    out << dfs(1, L);
 
     return 0;
 }
