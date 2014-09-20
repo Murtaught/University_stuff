@@ -28,14 +28,14 @@ int L;
 
 void openFiles()
 {
-    QFile *in_file = new QFile("problem3.in");
+    QFile *in_file = new QFile("problem4.in");
     if (!in_file->open(QFile::ReadOnly | QFile::Text))
     {
         qDebug() << "Could not open input file!";
     }
     in.setDevice(in_file);
 
-    QFile *out_file = new QFile("problem3.out");
+    QFile *out_file = new QFile("problem4.out");
     out_file->open(QFile::WriteOnly | QFile::Text);
     out.setDevice(out_file);
 }
