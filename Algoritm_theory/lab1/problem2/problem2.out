@@ -1,0 +1,9 @@
+1 | next c = a
+4 2 | next c = b
+4 3 | next c = a
+2 | next c = c
+1 | next c = a
+4 2 | next c = b
+4 3 | next c = a
+2 | final state
+Accepts
