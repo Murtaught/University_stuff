@@ -217,4 +217,6 @@ pip-log.txt
 ###############
 ## Other
 ###############
-.pro.user
+*.pro.user
+build-*
+*.autosave
