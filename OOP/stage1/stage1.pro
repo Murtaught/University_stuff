@@ -4,8 +4,22 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    geometry.cpp
+    point.cpp \
+    pointset.cpp \
+    color.cpp \
+    polygon.cpp \
+    geometricprimitive.cpp \
+    vectorpicture.cpp \
+    binarymarkerdispatcher.cpp
 
 HEADERS += \
-    geometry.h
+    point.h \
+    pointset.h \
+    color.h \
+    painteradapter.h \
+    polygon.h \
+    binaryserializable.h \
+    geometricprimitive.h \
+    vectorpicture.h \
+    binarymarkerdispatcher.h
 
