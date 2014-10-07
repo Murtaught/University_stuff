@@ -6,6 +6,7 @@
 
 class BinaryMarkerDispatcher
 {
+    friend class BinaryMarkerDispatcherKiller;
     typedef std::map<int, const BinarySerializable*> ContainerType;
 
 public:
@@ -19,7 +20,8 @@ public:
 private:
     ContainerType known_types_;
 
-    BinaryMarkerDispatcher() {} // = delete;
+    BinaryMarkerDispatcher() {}
+    ~BinaryMarkerDispatcher();
     static BinaryMarkerDispatcher *instance_;
 };
 

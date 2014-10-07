@@ -2,7 +2,7 @@
 #define POLYGON_H
 
 #include "geometricprimitive.h"
-#include "painteradapter.h"
+#include "painter.h"
 #include "point.h"
 #include "pointset.h"
 #include "color.h"
@@ -23,7 +23,7 @@ public:
 
     const PointSet& points() const { return points_; }
 
-    virtual void draw(PainterAdapter *painter);
+    virtual void draw(Painter *painter);
     virtual void moveTo(Point where);
     virtual void moveRelative(int dx, int dy);
     virtual void rotate(int angle, Point rotation_center);

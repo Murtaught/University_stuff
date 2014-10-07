@@ -1,4 +1,5 @@
 #include "binarymarkerdispatcher.h"
+#include <iostream>
 
 BinaryMarkerDispatcher *BinaryMarkerDispatcher::instance_ = 0;
 
@@ -40,3 +41,21 @@ BinarySerializable* BinaryMarkerDispatcher::dispatchMarker(int marker) const
 
     throw "No type is known for given binary marker!";
 }
+
+BinaryMarkerDispatcher::~BinaryMarkerDispatcher()
+{
+    std::cout << "~BinaryMarkerDispatcher()\n";
+    for (ContainerType::iterator it = known_types_.begin(); it != known_types_.end(); ++it)
+        delete it->second;
+}
+
+class BinaryMarkerDispatcherKiller
+{
+public:
+    ~BinaryMarkerDispatcherKiller()
+    {
+        delete BinaryMarkerDispatcher::instance();
+    }
+};
+
+BinaryMarkerDispatcherKiller killer;

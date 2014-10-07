@@ -2,7 +2,7 @@
 #define ABSTRACTGEOMETRICFIGURE_H
 
 #include "binaryserializable.h"
-#include "painteradapter.h"
+#include "painter.h"
 #include "point.h"
 #include "color.h"
 #include <iostream>
@@ -10,7 +10,7 @@
 class GeometricPrimitive : public BinarySerializable
 {
 public:
-    virtual void draw(PainterAdapter *painter) = 0;
+    virtual void draw(Painter *painter) = 0;
     virtual void moveTo(Point where) = 0;
     virtual void moveRelative(int dx, int dy) = 0;
     virtual void rotate(int angle, Point rotation_center) = 0;

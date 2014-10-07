@@ -1,6 +1,6 @@
 #include "polygon.h"
 
-void Polygon::draw(PainterAdapter */*painter*/)
+void Polygon::draw(Painter */*painter*/)
 {
 
 }
