@@ -1,5 +1,6 @@
 #include "vectorpicture.h"
 #include "binarymarkerdispatcher.h"
+#include "bytearray.h"
 
 int VectorPicture::binaryMarker() const
 {
@@ -7,64 +8,48 @@ int VectorPicture::binaryMarker() const
     return ('V') | ('P' << 8) | ('i' << 16) | ('c' << 24);
 }
 
-int VectorPicture::requiredBufferSize() const
+ByteArray::SizeType VectorPicture::requiredBufferSize() const
 {
-    // Our 4-byte marker, then 4-byte size and every primitive
-    int sum = 8;
+    ByteArray::SizeType sum = sizeof(binaryMarker()) + sizeof(size_type);
     for (size_type i = 0; i < size(); ++i)
         sum += (*this)[i]->requiredBufferSize();
 
     return sum;
 }
 
-void VectorPicture::toBinaryBuffer(char *buffer, int offset, int buf_size) const
+void VectorPicture::toByteArray(ByteArray &byte_array) const
 {
-    if ((buf_size - offset) < requiredBufferSize())
-    {
-        throw "Given buffer is too small!";
-    }
+    byte_array << binaryMarker() << size();
 
-    int *header_address = (int*) (buffer + offset);
-    header_address[0] = binaryMarker();
-    header_address[1] = (int) size();
-
-    int offset_acc = 0;
     for (size_type i = 0; i < size(); ++i)
-    {
-        GeometricPrimitive *primitive = (*this)[i];
-
-        primitive->toBinaryBuffer(buffer, offset + 8 + offset_acc, buf_size);
-        offset_acc += primitive->requiredBufferSize();
-    }
+        (*this)[i]->toByteArray(byte_array);
 }
 
-void VectorPicture::fromBinaryBuffer(const char *buffer, int offset, int buf_size)
+void VectorPicture::fromByteArray(ByteArrayReader &bar)
 {
-    if ((buf_size - offset) < 8)
+    if (bar.bytesLeft() < sizeof(binaryMarker()) + sizeof(size_type))
     {
         throw "Binary data is corrupted!";
     }
 
-    int *header_address = (int*) (buffer + offset);
-    if (header_address[0] != binaryMarker())
+    int scanned_marker; bar >> scanned_marker;
+    if (scanned_marker != binaryMarker())
     {
         throw "Given binary buffer does not contain a Vector Picture!";
     }
 
-    // extract size from header
-    resize(header_address[1]);
+    int scanned_size; bar >> scanned_size;
+    resize(scanned_size);
 
     const BinaryMarkerDispatcher &dispatcher = *BinaryMarkerDispatcher::instance();
-
-    int offset_acc = 0;
     for (size_type i = 0; i < size(); ++i)
     {
-        int primitive_marker = *((const int*) (buffer + offset + 8 + offset_acc));
-        GeometricPrimitive *primitive = (GeometricPrimitive*) (dispatcher.dispatchMarker(primitive_marker));
+        int primitive_marker;
+        bar >> primitive_marker;
+        bar.unread(sizeof(primitive_marker));
 
-        primitive->fromBinaryBuffer(buffer, offset + 8 + offset_acc, buf_size);
-        (*this)[i] = primitive;
-
-        offset_acc += primitive->requiredBufferSize();
+        // dispatcher выкинет исключение если такой маркер не зарегистрирован
+        (*this)[i] = dynamic_cast<GeometricPrimitive*>(dispatcher.dispatchMarker(primitive_marker));
+        (*this)[i]->fromByteArray(bar);
     }
 }

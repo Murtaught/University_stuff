@@ -10,10 +10,12 @@
 class GeometricPrimitive : public BinarySerializable
 {
 public:
-    virtual void draw(Painter *painter) = 0;
-    virtual void moveTo(Point where) = 0;
-    virtual void moveRelative(int dx, int dy) = 0;
-    virtual void rotate(int angle, Point rotation_center) = 0;
+    virtual void  draw(Painter *painter) const = 0;
+    virtual void  moveTo(Point where) = 0;
+    virtual void  moveRelative(int dx, int dy) = 0;
+    virtual void  rotate(double angle, Point rotation_center) = 0;
+    void  rotate(double angle) { rotate(angle, massCenter()); }
+    virtual Point massCenter() const = 0;
 
     virtual void printInfo(std::ostream &out) = 0;
 

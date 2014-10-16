@@ -1,8 +1,13 @@
 #include "polygon.h"
 
-void Polygon::draw(Painter */*painter*/)
-{
+#include "bytearray.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+void Polygon::draw(Painter *painter) const
+{
+    painter->drawConvexPolygon(*this);
 }
 
 void Polygon::moveTo(Point where)
@@ -18,19 +23,49 @@ void Polygon::moveTo(Point where)
 
 void Polygon::moveRelative(int dx, int dy)
 {
-    for (PointSet::size_type i = 0; i < points_.size(); ++i)
+    for (std::vector<Point>::size_type i = 0; i < points_.size(); ++i)
         points_[i].moveRelative(dx, dy);
 }
 
-void Polygon::rotate(int /*angle*/, Point /*rotation_center*/)
+void Polygon::rotate(double angle, Point center)
 {
+    for (std::vector<Point>::iterator p = points_.begin(); p != points_.end(); ++p)
+    {
+        double diff_x    = p->x() - center.x();
+        double diff_y    = p->y() - center.y();
+        double length    = std::sqrt(diff_x * diff_x + diff_y * diff_y);
+        double cur_angle = std::atan2(diff_y, diff_x) * (180.0 / M_PI);
 
+        cur_angle += angle;
+        cur_angle *= (M_PI / 180.0);
+
+        double new_x = center.x() + length * std::cos(cur_angle);
+        double new_y = center.y() + length * std::sin(cur_angle);
+
+        p->moveTo(int(new_x), int(new_y));
+    }
+}
+
+Point Polygon::massCenter() const
+{
+    int mc_x = 0, mc_y = 0;
+
+    for (std::vector<Point>::size_type i = 0; i < points_.size(); ++i)
+    {
+        mc_x += points_[i].x();
+        mc_y += points_[i].y();
+    }
+
+    mc_x /= points_.size();
+    mc_y /= points_.size();
+
+    return Point(mc_x, mc_y);
 }
 
 void Polygon::printInfo(std::ostream &out)
 {
     out << "Polygon {";
-    for (PointSet::size_type i = 0; i < points_.size(); ++i)
+    for (std::vector<Point>::size_type i = 0; i < points_.size(); ++i)
         out << " " << points_[i];
     out << " }";
 }
@@ -41,37 +76,34 @@ int Polygon::binaryMarker() const
     return ('P') | ('o' << 8) | ('l' << 16) | ('y' << 24);
 }
 
-int Polygon::requiredBufferSize() const
+ByteArray::SizeType Polygon::requiredBufferSize() const
 {
-    // first 4 bytes is always 'Poly' (binary marker)
-    return 4 + points_.requiredBufferSize();
+    return sizeof(binaryMarker()) + sizeof(border_color_) +
+           sizeof(inner_color_) + ByteArray::requiredByteSize(points_);
 }
 
-void Polygon::toBinaryBuffer(char *buffer, int offset, int buf_size) const
+void Polygon::toByteArray(ByteArray &byte_array) const
 {
-    if ((buf_size - offset) < requiredBufferSize())
-    {
-        throw "Given buffer is too small!";
-    }
-
-    int *header_address = (int*) (buffer + offset);
-    header_address[0] = binaryMarker();
-
-    points_.toBinaryBuffer(buffer, offset + 4, buf_size);
+    byte_array.append(binaryMarker());
+    byte_array.append(border_color_);
+    byte_array.append(inner_color_);
+    byte_array.append(points_);
 }
 
-void Polygon::fromBinaryBuffer(const char *buffer, int offset, int buf_size)
+void Polygon::fromByteArray(ByteArrayReader &bar)
 {
-    if ((buf_size - offset) < 8)
+    if (bar.bytesLeft() < sizeof( binaryMarker() ))
     {
         throw "Binary data is corrupted!";
     }
 
-    int *header_address = (int*) (buffer + offset);
-    if (header_address[0] != binaryMarker())
+    int scanned_marker;
+    bar >> scanned_marker;
+
+    if (scanned_marker != binaryMarker())
     {
         throw "Given binary does not contain a Polygon!";
     }
 
-    points_.fromBinaryBuffer(buffer, offset + 4, buf_size);
+    bar >> border_color_ >> inner_color_ >> points_;
 }

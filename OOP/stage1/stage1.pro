@@ -5,21 +5,22 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     point.cpp \
-    pointset.cpp \
     color.cpp \
     polygon.cpp \
     geometricprimitive.cpp \
     vectorpicture.cpp \
-    binarymarkerdispatcher.cpp
+    binarymarkerdispatcher.cpp \
+    ellipse.cpp
 
 HEADERS += \
     point.h \
-    pointset.h \
     color.h \
-    painteradapter.h \
     polygon.h \
     binaryserializable.h \
     geometricprimitive.h \
     vectorpicture.h \
-    binarymarkerdispatcher.h
+    binarymarkerdispatcher.h \
+    ellipse.h \
+    painter.h \
+    bytearray.h
 

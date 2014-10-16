@@ -21,13 +21,21 @@ public:
     void setX(int value) { x_ = value; }
     void setY(int value) { y_ = value; }
 
-    void moveTo(int x, int y) { setX(x); setY(y); }
+    Point& operator+=(const Point &other);
+    Point& operator-=(const Point &other);
 
+    void moveTo(int x, int y) { setX(x); setY(y); }
     void moveRelative(int dx, int dy) { x_ += dx; y_ += dy; }
 
 private:
     int x_, y_;
 };
+
+bool operator==(const Point &a, const Point &b);
+bool operator!=(const Point &a, const Point &b);
+
+Point operator+(Point a, const Point &b);
+Point operator-(Point a, const Point &b);
 
 // some comparators
 bool leftAndBelow(const Point &pa, const Point &pb);

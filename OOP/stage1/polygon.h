@@ -4,8 +4,8 @@
 #include "geometricprimitive.h"
 #include "painter.h"
 #include "point.h"
-#include "pointset.h"
 #include "color.h"
+#include <vector>
 
 class Polygon : public GeometricPrimitive
 {
@@ -13,7 +13,7 @@ public:
     Polygon()
     {}
 
-    explicit Polygon(const PointSet &points)
+    explicit Polygon(const std::vector<Point> &points)
         : points_(points)
     {}
 
@@ -21,27 +21,26 @@ public:
         : points_(other.points_)
     {}
 
-    const PointSet& points() const { return points_; }
+    const std::vector<Point>& points() const { return points_; }
+    void setPoints(const std::vector<Point> &points) { points_ = points; }
 
-    virtual void draw(Painter *painter);
-    virtual void moveTo(Point where);
-    virtual void moveRelative(int dx, int dy);
-    virtual void rotate(int angle, Point rotation_center);
+    virtual void  draw(Painter *painter) const;
+    virtual void  moveTo(Point where);
+    virtual void  moveRelative(int dx, int dy);
+    virtual void  rotate(double angle, Point rotation_center);
+    virtual Point massCenter() const;
 
     virtual void printInfo(std::ostream &out);
 
-    virtual BinarySerializable* clone() const
-    {
-        return new Polygon(*this);
-    }
+    virtual BinarySerializable* clone() const { return new Polygon(*this); }
 
     virtual int  binaryMarker() const;
-    virtual int  requiredBufferSize() const;
-    virtual void toBinaryBuffer(char *buffer, int offset, int buf_size) const;
-    virtual void fromBinaryBuffer(const char *buffer, int offset, int buf_size);
+    virtual ByteArray::SizeType requiredBufferSize() const;
+    virtual void toByteArray(ByteArray &byte_array) const;
+    virtual void fromByteArray(ByteArrayReader &bar);
 
 protected:
-    PointSet points_;
+     std::vector<Point> points_;
 };
 
 #endif // POLYGON_H

@@ -27,9 +27,9 @@ public:
     }
 
     virtual int  binaryMarker() const;
-    virtual int  requiredBufferSize() const;
-    virtual void toBinaryBuffer(char *buffer, int offset, int buf_size) const;
-    virtual void fromBinaryBuffer(const char *buffer, int offset, int buf_size);
+    virtual ByteArray::SizeType requiredBufferSize() const;
+    virtual void toByteArray(ByteArray &byte_array) const;
+    virtual void fromByteArray(ByteArrayReader &bar);
 };
 
 #endif // VECTORPICTURE_H

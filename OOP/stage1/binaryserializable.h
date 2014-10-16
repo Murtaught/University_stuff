@@ -1,6 +1,8 @@
 #ifndef BINARYSERIALIZABLE_H
 #define BINARYSERIALIZABLE_H
 
+#include "bytearray.h"
+
 class BinarySerializable
 {
 public:
@@ -8,9 +10,16 @@ public:
     virtual ~BinarySerializable() {}
 
     virtual int  binaryMarker() const = 0;
-    virtual int  requiredBufferSize() const = 0;
-    virtual void toBinaryBuffer(char *buffer, int offset, int buf_size) const = 0;
-    virtual void fromBinaryBuffer(const char *buffer, int offset, int buf_size) = 0;
+    virtual ByteArray::SizeType requiredBufferSize() const = 0;
+    virtual void toByteArray(ByteArray &byte_array) const = 0;
+    virtual void fromByteArray(ByteArrayReader &bar) = 0;
+
+    ByteArray toByteArray() const
+    {
+        ByteArray byte_array;
+        toByteArray(byte_array);
+        return byte_array;
+    }
 };
 
 #endif // BINARYSERIALIZABLE_H

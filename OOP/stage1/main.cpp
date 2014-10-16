@@ -1,11 +1,13 @@
 #include "geometricprimitive.h"
 #include "binaryserializable.h"
 #include "point.h"
-#include "pointset.h"
 #include "color.h"
 #include "polygon.h"
+#include "ellipse.h"
 #include "vectorpicture.h"
 #include "binarymarkerdispatcher.h"
+#include "bytearray.h"
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -16,11 +18,8 @@ void dumpToFile(const BinarySerializable *obj, const char *filename)
     ofstream out_file;
     out_file.open(filename, ios::out | ios::binary);
 
-    int   buf_size = obj->requiredBufferSize();
-    char *bin_buf  = new char[ buf_size ];
-
-    obj->toBinaryBuffer(bin_buf, 0, buf_size);
-    out_file.write(bin_buf, buf_size);
+    ByteArray ba = obj->toByteArray();
+    out_file.write(ba.data(), ba.size());
 }
 
 bool loadFromFile(BinarySerializable *obj, const char *filename)
@@ -35,31 +34,13 @@ bool loadFromFile(BinarySerializable *obj, const char *filename)
         in_file.seekg(0, ios::beg);
         in_file.read(bin_buf, buf_size);
 
-        obj->fromBinaryBuffer(bin_buf, 0, buf_size);
+        ByteArray ba(bin_buf, buf_size);
+        ByteArrayReader bar(&ba);
+        obj->fromByteArray(bar);
 
         return true;
     }
     return false;
-}
-
-PointSet read()
-{
-    PointSet set;
-    cout << "# of set: ";
-    int N; cin >> N;
-    set.resize(N);
-
-    for (int i = 0; i < N; ++i)
-    {
-        cout << "#" << (i + 1) << ": ";
-        cin >> set[i];
-    }
-
-    cout << "Points in set: " << set.size() << endl;
-    for (size_t i = 0; i < set.size(); ++i)
-        cout << "  Point #" << (i + 1) << ": " << set[i] << endl;
-
-    return set;
 }
 
 void listVectorPicture(ostream &out, const VectorPicture &pic)
@@ -85,10 +66,9 @@ GeometricPrimitive* interactiveMakePrimitive()
 
         if (prim_type == "polygon")
         {
-            PointSet set;
             cout << "  Enter number of points in your polygon: ";
             int N; cin >> N;
-            set.resize(N);
+            std::vector<Point> set(N);
 
             for (int i = 0; i < N; ++i)
             {
@@ -125,10 +105,104 @@ GeometricPrimitive* interactiveMakePrimitive()
 
 int main()
 {
+    // TODO написать класс BinaryBuffer
+    // ужать Color в 4 байта вместо 16
+    // пройтись по коду и заменить сишные касты на плюсовые static_cast и dynamic_cast
+    // убрать наследование VectorPicture от вектора указателей на примитивы
+    // возможно, подключить сюда boost::shared_ptr
+    // сделать нормальную систему эксепшонов
+    // создать отдельные проекты для редактора и библиотеки, связать их системой сборки
+
+    /*VectorPicture pic;
+
+    {
+        Point a(10, 0), b(0, 42), c(-42, 69);
+        std::vector<Point> vp;
+        vp.push_back(a);
+        vp.push_back(b);
+        vp.push_back(c);
+
+        Polygon *poly = new Polygon(vp);
+        pic.push_back(poly);
+    }
+
+    {
+        Ellipse *elly = new Ellipse(Point(7, 13), 4, 2);
+        elly->rotate(45.0, elly->center());
+
+        pic.push_back(elly);
+    }
+
+    dumpToFile(&pic, "pic.bin");*/
+
+
+
+    /*{
+        BinaryPrinter izer;
+
+        int some_int = 0x0ABACABA;
+        izer.add(some_int);
+        izer.add(some_int);
+
+        izer.add('M');
+        izer.add('M');
+        izer.add('M');
+
+        float some_float = 1488;
+        double some_double = 3.1415;
+        izer.add(some_float);
+        izer.add(some_double);
+
+        izer.add('M');
+        izer.add('M');
+        izer.add('M');
+
+        Point some_point(42, 69);
+        izer.add(some_point);
+
+        ofstream out_file;
+        out_file.open("IZER.dump", ios::out | ios::binary);
+        out_file.write(izer.get(), izer.getSize());
+    }*/
+
+    /*{
+        ifstream in_file;
+        in_file.open("IZER.dump", ios::in | ios::ate | ios::binary);
+        int    buf_size = in_file.tellg();
+        char  *bin_buf  = new char[ buf_size ];
+        in_file.seekg(0, ios::beg);
+        in_file.read(bin_buf, buf_size);
+
+        BinaryBufferScanner scanner(bin_buf, buf_size);
+
+        int some_int1, some_int2;
+        scanner.scan(some_int1);
+        scanner.scan(some_int2);
+        printf("%08X %08X \n", some_int1, some_int2);
+
+        char char1 = scanner.scanNext<char>();
+        char char2 = scanner.scanNext<char>();
+        char char3 = scanner.scanNext<char>();
+        cout << char1 << char2 << char3 << endl;
+
+        float some_float = scanner.scanNext<float>();
+        double some_double = scanner.scanNext<double>();
+        cout << some_float << endl << some_double << endl;
+
+        char1 = scanner.scanNext<char>();
+        char2 = scanner.scanNext<char>();
+        char3 = scanner.scanNext<char>();
+        cout << char1 << char2 << char3 << endl;
+
+        Point some_point = scanner.scanNext<Point>();
+        cout << some_point << endl;
+    }*/
+
     try
     {
         BinaryMarkerDispatcher &dispatcher = *BinaryMarkerDispatcher::instance();
-        dispatcher.addNewType(new Polygon());
+        dispatcher.addNewType(new Polygon);
+        dispatcher.addNewType(new Ellipse);
 
         cout << "Input filename: ";
         string filename;
@@ -204,6 +278,11 @@ int main()
             else if (cmd == "exit")
             {
                 break;
+            }
+            else if (cmd == "rotate")
+            {
+                cout << pic[0]->massCenter() << endl;
+                pic[0]->rotate(45);
             }
             else
             {

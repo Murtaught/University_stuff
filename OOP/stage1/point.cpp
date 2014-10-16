@@ -29,3 +29,39 @@ bool rightAndUp(const Point &pa, const Point &pb)
 
     return pa.x() > pb.x();
 }
+
+Point &Point::operator+=(const Point &other)
+{
+    x_ += other.x_;
+    y_ += other.y_;
+    return *this;
+}
+
+Point &Point::operator-=(const Point &other)
+{
+    x_ -= other.x_;
+    y_ -= other.y_;
+    return *this;
+}
+
+Point operator+(Point a, const Point &b)
+{
+    a += b;
+    return a;
+}
+
+Point operator-(Point a, const Point &b)
+{
+    a -= b;
+    return a;
+}
+
+bool operator==(const Point &a, const Point &b)
+{
+    return (a.x() == b.x()) && (a.y() == b.y());
+}
+
+bool operator!=(const Point &a, const Point &b)
+{
+    return !(a == b);
+}
