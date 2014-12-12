@@ -1,0 +1,67 @@
+# Repeat?
+
+alphabet: > 0 1 S F _
+
+start: start
+accept: acc
+reject: rej
+
+start > -> start > >
+start 0 -> put_0 S >
+start 1 -> put_1 S >
+
+put_0 0 -> put_0 0 >
+put_0 1 -> put_1 0 >
+put_1 0 -> put_0 1 >
+put_1 1 -> put_1 1 >
+
+put_0 _ -> really_put_0 F >
+put_1 _ -> really_put_1 F >
+really_put_0 _ -> go_to_beg 0 <
+really_put_1 _ -> go_to_beg 1 <
+
+go_to_beg any -> go_to_beg same <
+go_to_beg   S -> get_num_for_swap_S S >
+
+get_num_for_swap_S 0 -> swap_S_to_0 S <
+get_num_for_swap_S 1 -> swap_S_to_1 S <
+swap_S_to_0 S -> go_to_fin 0 >
+swap_S_to_1 S -> go_to_fin 1 >
+
+go_to_fin any -> go_to_fin same >
+go_to_fin   F -> get_num_for_swap_F F <
+
+get_num_for_swap_F 0 -> swap_F_to_0 F >
+get_num_for_swap_F 1 -> swap_F_to_1 F >
+swap_F_to_0 F -> go_to_beg 0 <
+swap_F_to_1 F -> go_to_beg 1 <
+
+get_num_for_swap_F S -> to_start S <
+get_num_for_swap_S F -> rej F ^
+
+to_start any -> to_start same <
+to_start   > -> compareL    > >
+
+compareL 0 -> check_0 > >
+compareL 1 -> check_1 > >
+compareL S -> acc S ^
+
+check_0 any -> check_0 same >
+check_1 any -> check_1 same >
+
+check_0 F -> check_0_af F >
+check_1 F -> check_1_af F >
+
+check_0_af F -> check_0_af F >
+check_1_af F -> check_1_af F >
+
+check_0_af 1 -> rej 1 ^
+check_0_af _ -> rej _ ^
+check_1_af 0 -> rej 0 ^
+check_1_af _ -> rej _ ^
+
+check_0_af 0 -> to_start F <
+check_1_af 1 -> to_start F <
+
+
+

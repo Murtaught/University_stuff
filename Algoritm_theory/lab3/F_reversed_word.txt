@@ -1,0 +1,29 @@
+# Reverse
+alphabet: 0 1 | > _
+start: start
+accept: finish
+
+# add | to end of the tape
+start any -> start      same >
+start   _ -> move_left     | <
+
+move_left any -> move_left same <
+move_left   > -> get_digit    > >
+
+get_digit 0 -> right_0 > >
+get_digit 1 -> right_1 > >
+get_digit | -> finish  > ^
+
+right_0 any -> right_0 same >
+right_0   | -> mv0        | >
+
+right_1 any -> right_1 same >
+right_1   | -> mv1        | >
+
+mv0 0 -> mv0 0 >
+mv0 1 -> mv1 0 >
+mv1 0 -> mv0 1 >
+mv1 1 -> mv1 1 >
+
+mv0 _ -> move_left 0 <
+mv1 _ -> move_left 1 <

@@ -1,0 +1,36 @@
+# From ternary to binary
+# 3 -to-> 2
+
+alphabet: 0 1 2 ; _ >
+
+start: start
+accept: finish f
+
+start any -> start  same >
+start   _ -> put_0     ; >
+put_0   _ -> to_num1 0 ^
+
+to_num1 any -> to_num1 same <
+to_num1   ; -> minus_1    ; <
+
+minus_1 0 -> minus_1 2 <
+minus_1 1 -> to_num2 0 >
+minus_1 2 -> to_num2 1 >
+minus_1 > -> cleanup > >
+
+cleanup any -> cleanup same >
+cleanup   ; -> finish     > ^
+
+to_num2 any -> to_num2 same >
+to_num2   _ -> plus_1     _ <
+
+plus_1 1 -> plus_1   0 <
+plus_1 0 -> to_num1  1 <
+plus_1 ; -> mv1      ; >
+
+mv0 0 -> mv0 0 >
+mv0 1 -> mv1 0 >
+mv1 0 -> mv0 1 >
+mv1 1 -> mv1 1 >
+mv0 _ -> to_num1 0 <
+mv1 _ -> to_num1 1 <

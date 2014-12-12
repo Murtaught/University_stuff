@@ -1,0 +1,45 @@
+# Adding two binary numbers
+
+alphabet: > 0 1 + _
+
+start: start
+accept: finish
+
+
+start any -> start same >
+start _   -> minus_1 _ <
+
+minus_1 0 -> minus_1 0 <
+minus_1 1 -> 0to1r 0 >
+minus_1 + -> cleanup + ^
+
+cleanup any -> cleanup _ >
+cleanup   _ -> finish  _ ^
+
+0to1r 0 -> 0to1r 1 >
+0to1r _ -> go_to_num1 _ <
+
+go_to_num1 any -> go_to_num1 same <
+go_to_num1   + -> plus_1 + <
+
+plus_1 1 -> plus_1 1 <
+plus_1 0 -> 1to0r  1 >
+plus_1 > -> go_right > >
+
+go_right any -> go_right same >
+go_right   _ -> get_symb    _ <
+get_symb   0 -> got_0 _ >
+get_symb   1 -> got_1 _ >
+get_symb   + -> got_+ _ >
+got_0 _ -> go_right 0 <
+got_1 _ -> go_right 1 <
+got_+ _ -> go_right + <
+
+get_symb > -> step_right > >
+step_right _ -> 1to0r 1 >
+
+1to0r 1 -> 1to0r 0 >
+1to0r + -> go_to_num2 + >
+
+go_to_num2 any -> go_to_num2 same >
+go_to_num2   _ -> minus_1 _ <

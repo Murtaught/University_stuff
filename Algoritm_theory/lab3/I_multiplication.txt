@@ -1,0 +1,142 @@
+# Multiplication!
+
+start: start
+accept: finish
+alphabet: > # 0 1 * $ % _ a b
+
+start any -> start same >
+start   _ -> return_to_beg $ <
+return_to_beg any -> return_to_beg same <
+return_to_beg   * -> copy_$           * <
+
+# copy first number to $ buffer
+copy_$ # -> copy_$ # <
+
+# when copied...
+copy_$ > -> fix# > >
+fix# # -> fix# 0 >
+fix# * -> put% * >
+
+copy_$ 0 -> copy_0_to_$ # >
+copy_$ 1 -> copy_1_to_$ # >
+    copy_0_to_$ any -> copy_0_to_$ same >
+    copy_1_to_$ any -> copy_1_to_$ same >
+    copy_0_to_$   $ -> copy_0_to_$_af $ >
+    copy_1_to_$   $ -> copy_1_to_$_af $ >
+
+    copy_0_to_$_af _ -> return_to_beg 0 <
+    copy_0_to_$_af 0 -> carry_0_$ 0 >
+    copy_0_to_$_af 1 -> carry_1_$ 0 >
+    copy_1_to_$_af _ -> return_to_beg 1 <
+    copy_1_to_$_af 0 -> carry_0_$ 1 >
+    copy_1_to_$_af 1 -> carry_1_$ 1 >
+
+    carry_0_$ 0 -> carry_0_$ 0 >
+    carry_0_$ 1 -> carry_1_$ 0 >
+    carry_1_$ 0 -> carry_0_$ 1 >
+    carry_1_$ 1 -> carry_1_$ 1 >
+    carry_0_$ _ -> return_to_beg 0 <
+    carry_1_$ _ -> return_to_beg 1 <
+
+
+# copy $ buffer to % buffer
+put% any -> put% same >
+put%   _ -> left_to_$ % <
+
+left_to_$ any -> left_to_$ same <
+left_to_$   $ -> copy_% $ >
+left_to_$   a -> copy_% a >
+left_to_$   b -> copy_% b >
+
+copy_% 0 -> carry_%0 a >
+copy_% 1 -> carry_%1 b >
+
+carry_%0 any -> carry_%0  same >
+carry_%0   _ -> left_to_$    0 <
+carry_%1 any -> carry_%1  same >
+carry_%1   _ -> left_to_$    1 <
+
+# copied
+copy_% % -> fix_ret$ % <
+fix_ret$ any -> fix_ret$ same <
+fix_ret$   $ -> fix_ab      $ >
+
+fix_ab a -> fix_ab 0 >
+fix_ab b -> fix_ab 1 >
+fix_ab % -> jbefore_start % <
+
+# fixed ab
+jbefore_start any -> jbefore_start same <
+jbefore_start   $ -> B_minus_1        $ <
+
+B_minus_1 0 -> B_minus_1 0 <
+B_minus_1 1 -> B_0to1r   0 >
+B_minus_1 * -> cleanup   * ^
+B_0to1r   0 -> B_0to1r    1 >
+B_0to1r   $ -> go_to_temp $ >
+
+go_to_temp any -> go_to_temp same >
+go_to_temp   _ -> temp_minus_1  _ <
+
+temp_minus_1 0 -> temp_minus_1  0 <
+temp_minus_1 1 -> temp_0to1r    0 >
+temp_minus_1 % -> clean% % >
+
+temp_0to1r 0 -> temp_0to1r 1 >
+temp_0to1r _ -> go_to_A _ <
+
+go_to_A any -> go_to_A  same <
+go_to_A   * -> plus_1    * <
+
+# A :: plus_1
+plus_1 1 -> plus_1 1 <
+plus_1 0 -> 1to0r  1 >
+plus_1 > -> create_lz > >
+
+1to0r 1 -> 1to0r 0 >
+1to0r * -> go_to_temp * >
+
+# Create leading zero
+create_lz 0 -> mv0 # >
+create_lz 1 -> mv1 # >
+
+mv0 0 -> mv0 0 >
+mv0 1 -> mv1 0 >
+mv0 * -> mv* 0 >
+mv0 $ -> mv$ 0 >
+mv0 % -> mv% 0 >
+
+mv1 0 -> mv0 1 >
+mv1 1 -> mv1 1 >
+mv1 * -> mv* 1 >
+mv1 $ -> mv$ 1 >
+mv1 % -> mv% 1 >
+
+mv* 0 -> mv0 * >
+mv* 1 -> mv1 * >
+mv$ 0 -> mv0 $ >
+mv$ 1 -> mv1 $ >
+mv% 0 -> mv0 % >
+mv% 1 -> mv1 % >
+
+mv0 _ -> ret_to_# 0 <
+mv1 _ -> ret_to_# 1 <
+
+ret_to_# any -> ret_to_# same <
+ret_to_#   # -> 1to0r 1 >
+
+# recopy $buf to %buf
+clean%   any -> clean%   _ >
+clean%     _ -> ret_to_% _ <
+ret_to_%   _ -> ret_to_% _ <
+ret_to_%   % -> left_to_$ % <
+
+# cleanup
+cleanup any -> cleanup _ >
+cleanup   _ -> to_>  _ <
+
+# cleanup-front
+to_> any -> to_> same <
+to_>   > -> remove_lzs > >
+remove_lzs 0 -> remove_lzs > >
+remove_lzs 1 -> finish 1 ^

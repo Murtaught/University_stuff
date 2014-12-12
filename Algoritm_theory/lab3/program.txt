@@ -1,0 +1,38 @@
+# Compare
+alphabet: 0 1 > _ <
+start: start
+accept: less
+reject: greater
+
+start > -> cmpr > >
+
+cmpr 0 -> cmp_0 > >
+cmpr 1 -> cmp_1 > >
+cmpr < -> go_check < ^
+
+go_check < -> go_check < >
+go_check 0 -> less 0 ^
+go_check 1 -> less 1 ^
+# actually greater or equal
+go_check _ -> greater _ ^
+
+cmp_0 any -> cmp_0 same >
+cmp_1 any -> cmp_1 same >
+
+cmp_0 < -> cmp_<_0 < >
+cmp_1 < -> cmp_<_1 < >
+
+cmp_<_0 < -> cmp_<_0 < >
+cmp_<_1 < -> cmp_<_1 < >
+
+cmp_<_0 1 -> less    1 ^
+cmp_<_1 0 -> greater 0 ^
+
+cmp_<_0 _ -> greater _ ^
+cmp_<_1 _ -> greater _ ^
+
+cmp_<_0 0 -> next_digit < <
+cmp_<_1 1 -> next_digit < <
+
+next_digit any -> next_digit same <
+next_digit   > ->       cmpr    > >

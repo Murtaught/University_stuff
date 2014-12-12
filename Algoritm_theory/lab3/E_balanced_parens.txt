@@ -1,0 +1,19 @@
+# Blanced parentheses?
+
+alphabet: > ( ) X _
+
+start: q0
+accept: acc
+reject: rej
+
+q0 any -> q0 same >
+q0   ) -> q1    X <
+q0   _ -> q2    _ <
+
+q1 any -> q1 same <
+q1   > -> rej   > ^
+q1   ( -> q0    X >
+
+q2   ( -> rej   ( ^
+q2   X -> q2    X <
+q2   > -> acc   > ^

@@ -1,0 +1,37 @@
+# Comment
+start: s
+accept: finish
+
+# add | to end of the tape
+s > -> s > >
+s 1 -> s 1 >
+s 0 -> s 0 >
+s _ -> a | <
+
+#
+a 0 -> carry0right | >
+carry0right | -> carry0right 0 >
+carry0right 0 -> carry0right 0 >
+carry0right 1 -> carry0right 1 >
+carry0right _ -> moveto|left 0 <
+
+a 1 -> carry1right | >
+carry1right | -> carry1right 1 >
+carry1right 0 -> carry1right 0 >
+carry1right 1 -> carry1right 1 >
+carry1right _ -> moveto|left 1 <
+
+moveto|left 0 -> moveto|left 0 <
+moveto|left 1 -> moveto|left 1 <
+moveto|left | -> a | <
+
+a > -> swap|right > >
+swap|right | -> swap|right | >
+swap|right 0 -> got0movingleft | <
+swap|right 1 -> got1movingleft | <
+
+got0movingleft | -> swap|right 0 >
+got1movingleft | -> swap|right 1 >
+
+swap|right _ -> delete| _ <
+delete| | -> finish _ ^
