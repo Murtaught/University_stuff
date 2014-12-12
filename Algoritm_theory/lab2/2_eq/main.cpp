@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <string>
 #include <utility>
 #include <cstdlib>
 using namespace std;
@@ -9,7 +10,7 @@ using namespace std;
 struct Automaton
 {
     int n, m, k;
-    map< pair<int, char>, int >  transition;
+    map< pair<int, char>, int >  transition, reverse_transition;
     map< int, bool > is_accepting;
 
     void read()
@@ -31,6 +32,7 @@ struct Automaton
             cin >> a >> b >> c;
 
             transition[make_pair(a, c)] = b;
+            reverse_transition[make_pair(b, c)] = a;
         }
     }
 
@@ -44,13 +46,22 @@ struct Automaton
         return getTransition(st, tr) != 0;
     }
 
+    bool isAccepting(const string &s)
+    {
+        int cur_state = 1;
+        for (int i = 0; i < (int) s.size(); ++i)
+        {
+            cur_state = getTransition(cur_state, s[i]);
+        }
+
+        return is_accepting[cur_state];
+    }
 };
 
 Automaton A, B;
-map<int, int> isomorph_state;
 map<int, bool> was;
 
-void check(int a, int b)
+/*void check(int a, int b)
 {
     if ( isomorph_state[a] == 0 )
     {
@@ -86,27 +97,26 @@ void f(int a_idx, int b_idx)
             }
         }
     }
-}
+}*/
 
 int main()
 {
-    freopen("isomorphism.in", "r", stdin);
-    freopen("isomorphism.out", "w", stdout);
+    freopen("equivalence.in", "r", stdin);
+    //freopen("equivalence.out", "w", stdout);
 
     A.read();
     B.read();
 
-    isomorph_state[1] = 1;
-    f(1, 1);
+    //f(1, 1);
 
-    for (int i = 1; i <= A.n; ++i)
+    /*for (int i = 1; i <= A.n; ++i)
     {
         if ( A.is_accepting[i] != B.is_accepting[ isomorph_state[i] ] )
         {
             cout << "NO" << endl;
             exit(0);
         }
-    }
+    }*/
 
     cout << "YES" << endl;
     return 0;
